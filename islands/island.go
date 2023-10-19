@@ -15,6 +15,7 @@ type Island interface {
 	Hydrate(payload map[string]any) Island
 	Render() (string, error)
 	GetName() string
+	GetTemplate() string
 }
 
 func MustRender(elem Island) string {
@@ -46,6 +47,10 @@ func NewIsland(name string, template string) Island {
 
 func (n *node) GetName() string {
 	return n.name
+}
+
+func (n *node) GetTemplate() string {
+	return n.template
 }
 
 func (n *node) AddProp(name string, prop any) Island {
