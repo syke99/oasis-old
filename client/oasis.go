@@ -20,7 +20,7 @@ func (o *Oasis) AddFunc(name string, fn func(args ...js.Value)) {
 	o.funcs[name] = fn
 }
 
-func (o *Oasis) Load() {
+func (o *Oasis) Run() {
 	if o.funcs == nil {
 		return
 	}
@@ -31,4 +31,5 @@ func (o *Oasis) Load() {
 			return nil
 		}))
 	}
+	<-make(chan struct{})
 }
