@@ -2,7 +2,9 @@
 
 package console
 
-import "syscall/js"
+import (
+	"syscall/js"
+)
 
 var console = js.Global().Get("console")
 
@@ -17,7 +19,15 @@ func Assert(assertion func(...any) bool, astArgs []any, args ...any) {
 		return assertion(astArgs...)
 	})
 
-	console.Call("assert", fn, a)
+	all := make([]any, len(a)+1)
+
+	all[0] = fn
+
+	for i := range a {
+		all[i+1] = a[i]
+	}
+
+	console.Call("assert", all...)
 }
 
 func Clear() {
@@ -43,13 +53,7 @@ func CountReset(label string) {
 }
 
 func DebugObject(objs ...any) {
-	o := make([]js.Value, len(objs))
-
-	for i := range objs {
-		o[i] = js.ValueOf(objs[i])
-	}
-
-	console.Call("debug", o)
+	console.Call("debug", objs...)
 }
 
 func DebugMessage(msg string, subStr []string) {
@@ -59,7 +63,15 @@ func DebugMessage(msg string, subStr []string) {
 		s[i] = js.ValueOf(subStr[i])
 	}
 
-	console.Call("debug", msg, s)
+	all := make([]any, len(s)+1)
+
+	all[0] = msg
+
+	for i := range s {
+		all[i+1] = s[i]
+	}
+
+	console.Call("debug", all...)
 }
 
 func Dir(obj any) {
@@ -71,13 +83,7 @@ func DirXML(obj any) {
 }
 
 func ErrObject(objs ...any) {
-	o := make([]js.Value, len(objs))
-
-	for i := range objs {
-		o[i] = js.ValueOf(objs[i])
-	}
-
-	console.Call("error", o)
+	console.Call("error", objs...)
 }
 
 func ErrMessage(msg string, subStr []string) {
@@ -87,7 +93,15 @@ func ErrMessage(msg string, subStr []string) {
 		s[i] = js.ValueOf(subStr[i])
 	}
 
-	console.Call("error", msg, s)
+	all := make([]any, len(s)+1)
+
+	all[0] = msg
+
+	for i := range s {
+		all[i+1] = s[i]
+	}
+
+	console.Call("error", all...)
 }
 
 func Group(label string) {
@@ -113,13 +127,7 @@ func GroupEnd() {
 }
 
 func InfoObject(objs ...any) {
-	o := make([]js.Value, len(objs))
-
-	for i := range objs {
-		o[i] = js.ValueOf(objs[i])
-	}
-
-	console.Call("info", o)
+	console.Call("info", objs...)
 }
 
 func InfoMessage(msg string, subStr []string) {
@@ -129,17 +137,19 @@ func InfoMessage(msg string, subStr []string) {
 		s[i] = js.ValueOf(subStr[i])
 	}
 
-	console.Call("info", msg, s)
+	all := make([]any, len(s)+1)
+
+	all[0] = msg
+
+	for i := range s {
+		all[i+1] = s[i]
+	}
+
+	console.Call("info", all...)
 }
 
 func LogObject(objs ...any) {
-	o := make([]js.Value, len(objs))
-
-	for i := range objs {
-		o[i] = js.ValueOf(objs[i])
-	}
-
-	console.Call("log", o)
+	console.Call("log", objs...)
 }
 
 func LogMessage(msg string, subStr []string) {
@@ -149,7 +159,15 @@ func LogMessage(msg string, subStr []string) {
 		s[i] = js.ValueOf(subStr[i])
 	}
 
-	console.Call("log", msg, s)
+	all := make([]any, len(s)+1)
+
+	all[0] = msg
+
+	for i := range s {
+		all[i+1] = s[i]
+	}
+
+	console.Call("log", all...)
 }
 
 func Table(obj any, restrictions ...any) {
@@ -217,13 +235,7 @@ func Trace(objs ...any) {
 }
 
 func WarnObject(objs ...any) {
-	o := make([]js.Value, len(objs))
-
-	for i := range objs {
-		o[i] = js.ValueOf(objs[i])
-	}
-
-	console.Call("warn", o)
+	console.Call("warn", objs...)
 }
 
 func WarnMessage(msg string, subStr []string) {
@@ -233,5 +245,13 @@ func WarnMessage(msg string, subStr []string) {
 		s[i] = js.ValueOf(subStr[i])
 	}
 
-	console.Call("warn", msg, s)
+	all := make([]any, len(s)+1)
+
+	all[0] = msg
+
+	for i := range s {
+		all[i+1] = s[i]
+	}
+
+	console.Call("warn", all...)
 }
