@@ -1,6 +1,7 @@
 package islands
 
 import (
+	"encoding/json"
 	"github.com/syke99/oasis/internal"
 )
 
@@ -13,6 +14,7 @@ type Island interface {
 	AddProp(name string, prop any) Island
 	AddProps(props map[string]any) Island
 	Hydrate(payload map[string]any) Island
+	HydrateBytes(payload []byte) (Island, error)
 	Render() (string, error)
 	GetName() string
 	GetTemplate() string
@@ -79,6 +81,18 @@ func (n *node) AddChild(child Island) {
 func (n *node) Hydrate(payload map[string]any) Island {
 	n.payload = payload
 	return n
+}
+
+func (n *node) HydrateBytes(payload []byte) (Island, error) {
+	p := make(map[string]any)
+
+	err := json.Unmarshal(payload, &p)
+	if err != nil {
+		return nil, err
+	}
+
+	n.payload = p
+	return n, nil
 }
 
 func (n *node) Render() (string, error) {
