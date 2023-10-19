@@ -1,6 +1,7 @@
-package oasis
+package server
 
 import (
+	"github.com/syke99/oasis/islands"
 	"net/http"
 )
 
@@ -12,7 +13,7 @@ type Endpoint struct {
 type HandlerWithMiddleware struct {
 	HandlerFunc http.HandlerFunc
 	Middleware  []http.HandlerFunc
-	Island      Island
+	Island      islands.Island
 }
 
 type HTTPMethod string

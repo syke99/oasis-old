@@ -1,12 +1,11 @@
-package oasis
+package server
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/syke99/oasis/islands"
 	"golang.org/x/net/context"
 	"net/http"
-
-	"github.com/go-chi/chi/v5"
 )
 
 type Router struct {
@@ -95,7 +94,7 @@ type OasisWriter interface {
 	WriteHeader(statusCode int)
 }
 
-func NewOasisWriter(w http.ResponseWriter, island Island) OasisWriter {
+func NewOasisWriter(w http.ResponseWriter, island islands.Island) OasisWriter {
 	return &oasisWriter{
 		island: island,
 		writer: w,
@@ -103,7 +102,7 @@ func NewOasisWriter(w http.ResponseWriter, island Island) OasisWriter {
 }
 
 type oasisWriter struct {
-	island Island
+	island islands.Island
 	writer http.ResponseWriter
 }
 
@@ -132,7 +131,7 @@ func (o *oasisWriter) Write(p []byte) (n int, err error) {
 
 	o.island.Hydrate(payload.payload)
 
-	return o.writer.Write([]byte(MustRender(o.island)))
+	return o.writer.Write([]byte(islands.MustRender(o.island)))
 }
 
 type OasisPayload struct {

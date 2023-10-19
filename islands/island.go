@@ -1,4 +1,4 @@
-package oasis
+package islands
 
 import (
 	"github.com/syke99/oasis/internal"
@@ -14,7 +14,7 @@ type Island interface {
 	AddProps(props map[string]any) Island
 	Hydrate(payload map[string]any) Island
 	Render() (string, error)
-	getName() string
+	GetName() string
 }
 
 func MustRender(elem Island) string {
@@ -44,7 +44,7 @@ func NewIsland(name string, template string) Island {
 	return n
 }
 
-func (n *node) getName() string {
+func (n *node) GetName() string {
 	return n.name
 }
 
@@ -68,7 +68,7 @@ func (n *node) AddProps(props map[string]any) Island {
 }
 
 func (n *node) AddChild(child Island) {
-	n.children[child.getName()] = child
+	n.children[child.GetName()] = child
 }
 
 func (n *node) Hydrate(payload map[string]any) Island {
