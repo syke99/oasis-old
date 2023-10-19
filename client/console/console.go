@@ -13,11 +13,11 @@ func Assert(assertion func(...any) bool, astArgs []any, args ...any) {
 		a[i] = js.ValueOf(args[i])
 	}
 
-	fn := js.FuncOf(func(this Value, args []Value) any {
+	fn := js.FuncOf(func(this js.Value, args []js.Value) any {
 		return assertion(astArgs...)
 	})
 
-	console.Call("assert", a...)
+	console.Call("assert", fn, a)
 }
 
 func Clear() {
@@ -38,7 +38,7 @@ func CountReset(label string) {
 	case true:
 		console.Call("countReset", label)
 	case false:
-		console.Call()
+		console.Call("countReset")
 	}
 }
 
@@ -49,7 +49,7 @@ func DebugObject(objs ...any) {
 		o[i] = js.ValueOf(objs[i])
 	}
 
-	console.Call("debug", o...)
+	console.Call("debug", o)
 }
 
 func DebugMessage(msg string, subStr []string) {
@@ -59,7 +59,7 @@ func DebugMessage(msg string, subStr []string) {
 		s[i] = js.ValueOf(subStr[i])
 	}
 
-	console.Call("debug", msg, s...)
+	console.Call("debug", msg, s)
 }
 
 func Dir(obj any) {
@@ -77,7 +77,7 @@ func ErrObject(objs ...any) {
 		o[i] = js.ValueOf(objs[i])
 	}
 
-	console.Call("error", o...)
+	console.Call("error", o)
 }
 
 func ErrMessage(msg string, subStr []string) {
@@ -87,7 +87,7 @@ func ErrMessage(msg string, subStr []string) {
 		s[i] = js.ValueOf(subStr[i])
 	}
 
-	console.Call("error", msg, s...)
+	console.Call("error", msg, s)
 }
 
 func Group(label string) {
@@ -119,7 +119,7 @@ func InfoObject(objs ...any) {
 		o[i] = js.ValueOf(objs[i])
 	}
 
-	console.Call("info", o...)
+	console.Call("info", o)
 }
 
 func InfoMessage(msg string, subStr []string) {
@@ -129,7 +129,7 @@ func InfoMessage(msg string, subStr []string) {
 		s[i] = js.ValueOf(subStr[i])
 	}
 
-	console.Call("info", msg, s...)
+	console.Call("info", msg, s)
 }
 
 func LogObject(objs ...any) {
@@ -139,7 +139,7 @@ func LogObject(objs ...any) {
 		o[i] = js.ValueOf(objs[i])
 	}
 
-	console.Call("log", o...)
+	console.Call("log", o)
 }
 
 func LogMessage(msg string, subStr []string) {
@@ -149,7 +149,7 @@ func LogMessage(msg string, subStr []string) {
 		s[i] = js.ValueOf(subStr[i])
 	}
 
-	console.Call("log", msg, s...)
+	console.Call("log", msg, s)
 }
 
 func Table(obj any, restrictions ...any) {
@@ -200,9 +200,9 @@ func TimeLog(label string, vals ...any) {
 
 	switch label == "" {
 	case true:
-		console.Call("timeLog", v...)
+		console.Call("timeLog", v)
 	case false:
-		console.Call("timeLog", label, v...)
+		console.Call("timeLog", label, v)
 	}
 }
 
@@ -213,7 +213,7 @@ func Trace(objs ...any) {
 		o[i] = js.ValueOf(objs[i])
 	}
 
-	console.Call("trace", o...)
+	console.Call("trace", o)
 }
 
 func WarnObject(objs ...any) {
@@ -223,7 +223,7 @@ func WarnObject(objs ...any) {
 		o[i] = js.ValueOf(objs[i])
 	}
 
-	console.Call("warn", o...)
+	console.Call("warn", o)
 }
 
 func WarnMessage(msg string, subStr []string) {
@@ -233,5 +233,5 @@ func WarnMessage(msg string, subStr []string) {
 		s[i] = js.ValueOf(subStr[i])
 	}
 
-	console.Call("warn", msg, s...)
+	console.Call("warn", msg, s)
 }

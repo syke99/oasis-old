@@ -20,7 +20,7 @@ type element struct {
 }
 
 func (e *element) GetElementById(id string) Element {
-	return *element{
+	return &element{
 		elem: e.elem.Call("getElementById", id),
 	}
 }
@@ -54,7 +54,7 @@ func (e *element) GetOuterHTML() string {
 }
 
 func (e *element) SetOuterHTML(outer string) {
-	e.elem.Set("outerHTML", inner)
+	e.elem.Set("outerHTML", outer)
 }
 
 func (e *element) SetAttribute(attr string, val string) {

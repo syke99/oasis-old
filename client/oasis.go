@@ -2,6 +2,8 @@
 
 package client
 
+import "syscall/js"
+
 type Oasis struct {
 	funcs map[string]func(args ...js.Value)
 }
@@ -26,6 +28,7 @@ func (o *Oasis) Load() {
 	for k, v := range o.funcs {
 		js.Global().Set(k, js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 			v(args...)
+			return nil
 		}))
 	}
 }

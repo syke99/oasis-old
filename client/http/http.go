@@ -3,8 +3,11 @@
 package http
 
 import (
+	"bytes"
 	"errors"
+	"io"
 	"net/http"
+	"syscall/js"
 )
 
 func Do(req *http.Request) (*http.Response, error) {
@@ -16,6 +19,7 @@ func Do(req *http.Request) (*http.Response, error) {
 		Invoke().
 		Call("then", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 			res = goHttpResponse(args[0])
+			return nil
 		})).
 		Call("catch", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 			err = errors.New(args[0].Call("toString").String())
@@ -30,13 +34,12 @@ func Do(req *http.Request) (*http.Response, error) {
 }
 
 func goHttpResponse(response js.Value) *http.Response {
-	&http.Response{
+	return &http.Response{
 		Status:     response.Get("statusText").String(),
 		StatusCode: response.Get("status").Int(),
 		Header:     httpResponseHeaders(response),
-		Body:       httpResponseBody(response),
+		Body:       io.NopCloser(bytes.NewBuffer(httpResponseBody(response))),
 	}
-	return nil
 }
 
 func httpResponseHeaders(response js.Value) http.Header {
@@ -46,9 +49,10 @@ func httpResponseHeaders(response js.Value) http.Header {
 		Get("headers").
 		Call("forEach", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 			key := args[0].String()
-			val := args[1].String()
+			val := []string{args[1].String()}
 
 			headers[key] = val
+			return nil
 		}))
 
 	return headers
@@ -60,12 +64,12 @@ func httpResponseBody(response js.Value) []byte {
 	response.
 		Call("arrayBuffer").
 		Call("then", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-
-			l := this.Lenght()
+			l := this.Length()
 
 			body = make([]byte, l)
 
 			js.CopyBytesToGo(body, this)
+			return nil
 		}))
 
 	return body
@@ -92,7 +96,7 @@ func httpRequestAsHandler(req *http.Request) js.Value {
 			defer res.Body.Close()
 
 			// Read the response body
-			data, err := ioutil.ReadAll(res.Body)
+			data, err := io.ReadAll(res.Body)
 			if err != nil {
 				// Handle errors here too
 				errorConstructor := js.Global().Get("Error")
@@ -118,5 +122,5 @@ func httpRequestAsHandler(req *http.Request) js.Value {
 		return nil
 	})
 
-	return handler
+	return js.ValueOf(handler)
 }

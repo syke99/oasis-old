@@ -15,8 +15,8 @@ func Document() *Doc {
 }
 
 func (d *Doc) GetElementById(id string) Element {
-	return *element{
-		elem: e.elem.Call("getElementById", id),
+	return &element{
+		elem: d.doc.Call("getElementById", id),
 	}
 }
 
