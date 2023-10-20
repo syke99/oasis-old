@@ -9,6 +9,8 @@ import (
 	"net/http"
 )
 
+// Router wraps a chi.Router
+// to add Endpoints to
 type Router struct {
 	mux chi.Router
 }
@@ -19,6 +21,11 @@ func NewRouter() *Router {
 	}
 }
 
+// AddEndpoint adds an individual Endpoint
+// to a Router. It sets up the handlers to
+// their respective methods for the Endpoint's
+// route, as well as makes sure they're passed
+// through their respective middlewares
 func (r *Router) AddEndpoint(endpoint Endpoint) *Router {
 	// create a sub-router for this endpoint
 	rtr := chi.NewRouter()
@@ -45,7 +52,7 @@ func (r *Router) AddEndpoint(endpoint Endpoint) *Router {
 				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					oW := NewOasisWriter(w, handler.Island)
 
-					r.WithContext(context.WithValue(r.Context(), "props", any(handler.Island).(*node).props.props))
+					r.WithContext(context.WithValue(r.Context(), "props", handler.Island.GetProps()))
 
 					handler.HandlerFunc(oW, r)
 				})
@@ -63,6 +70,18 @@ func (r *Router) AddEndpoint(endpoint Endpoint) *Router {
 	return r
 }
 
+// AddEndpoints is like AddEndpoint, but adds
+// multiple endpoints at once
+func (r *Router) AddEndpoints(endpoints ...Endpoint) *Router {
+	for i := range endpoints {
+		r.AddEndpoint(endpoints[i])
+	}
+	return r
+}
+
+// PropsForRequest allows you to get the props
+// from an Endpoint's Island by passing in the
+// request
 func PropsForRequest(r *http.Request) map[string]any {
 	val := r.Context().Value("props")
 	if val != nil {
@@ -72,13 +91,8 @@ func PropsForRequest(r *http.Request) map[string]any {
 	return nil
 }
 
-func (r *Router) AddEndpoints(endpoints ...Endpoint) *Router {
-	for i := range endpoints {
-		r.AddEndpoint(endpoints[i])
-	}
-	return r
-}
-
+// UpgradeRouter upgrades a chi.Router and
+// returns a new *Router
 func UpgradeRouter(router chi.Router) *Router {
 	return &Router{
 		mux: router,
@@ -89,12 +103,17 @@ func (r *Router) ServeHTTP(w http.ResponseWriter, rq *http.Request) {
 	r.mux.ServeHTTP(w, rq)
 }
 
+// OasisWriter satisfies the http.ResponseWriter
+// interface for a specific Endpoint handler's Island
 type OasisWriter interface {
 	Write(p []byte) (n int, err error)
 	Header() http.Header
 	WriteHeader(statusCode int)
 }
 
+// NewOasisWriter takes in an http.ResponseWriter
+// and an Island so that the Island can be
+// rendered and written back to w
 func NewOasisWriter(w http.ResponseWriter, island islands.Island) OasisWriter {
 	return &oasisWriter{
 		island: island,
@@ -135,6 +154,9 @@ func (o *oasisWriter) Write(p []byte) (n int, err error) {
 	return o.writer.Write([]byte(islands.MustRender(o.island)))
 }
 
+// OasisPayload is a convenience
+// wrapper for a payload to be
+// rendered to an Island
 type OasisPayload struct {
 	payload map[string]any
 }
@@ -143,10 +165,16 @@ func NewPayload() *OasisPayload {
 	return &OasisPayload{payload: make(map[string]any)}
 }
 
+// Set allows you to set key/val
+// in an *OasisPayload
 func (p *OasisPayload) Set(key string, val any) {
 	p.payload[key] = val
 }
 
+// Marshal will marshal the
+// *OasisPayload and return
+// the bytes representing
+// the payload or an error
 func (p *OasisPayload) Marshal() ([]byte, error) {
 	return json.Marshal(p.payload)
 }

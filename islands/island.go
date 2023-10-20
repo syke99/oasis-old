@@ -16,6 +16,9 @@ type Island interface {
 	GetName() string
 	// GetTemplate returns the template of an Island
 	GetTemplate() string
+	// GetProps returns the props for a given
+	// Island as a map[string]any
+	GetProps() map[string]any
 	AddChild(child Island)
 	// AddProp adds  prop to an Island. It will then be
 	// available in an Island's template via {{ .props.name }}
@@ -73,6 +76,12 @@ func (n *node) GetName() string {
 // GetTemplate returns the template of an Island
 func (n *node) GetTemplate() string {
 	return n.template
+}
+
+// GetProps returns the props for a given
+// Island as a map[string]any
+func (n *node) GetProps() map[string]any {
+	return n.props.props
 }
 
 // AddProp adds  prop to an Island. It will then be
