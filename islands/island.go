@@ -53,7 +53,7 @@ type node struct {
 	name     string
 	template string
 	props    *props
-	children map[string]any
+	children map[string]Island
 	payload  map[string]any
 }
 
@@ -62,7 +62,7 @@ func NewIsland(name string, template string) Island {
 		name:     name,
 		template: template,
 		props:    &props{props: make(map[string]any, 0)},
-		children: make(map[string]any, 0),
+		children: make(map[string]Island, 0),
 	}
 
 	return n
@@ -134,9 +134,20 @@ func (n *node) HydrateBytes(payload []byte) (Island, error) {
 // the rendered template string or an error if one
 // occurs
 func (n *node) Render() (string, error) {
+	childMap := make(map[string]string)
+
+	for name, child := range n.children {
+		renderedChild, err := child.Render()
+		if err != nil {
+			return "", err
+		}
+
+		childMap[name] = renderedChild
+	}
+
 	p := &internal.Attrs{
 		Props:    n.props.props,
-		Children: n.children,
+		Children: childMap,
 		Payload:  n.payload,
 	}
 	return internal.Render(n.template, p)

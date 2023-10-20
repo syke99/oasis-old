@@ -11,7 +11,7 @@ import (
 
 type Attrs struct {
 	Props    map[string]any
-	Children map[string]any
+	Children map[string]string
 	Payload  map[string]any
 }
 
@@ -22,8 +22,6 @@ func Render(t string, data *Attrs) (string, error) {
 	attrs["payload"] = data.Payload
 
 	for k, v := range data.Children {
-		v := v
-
 		attrs[k] = v
 	}
 
