@@ -125,7 +125,7 @@ func (n *node) AddProps(props map[string]any) Island {
 // {{ .children.(name) }}. If the child was
 // added and prerendered was false, then
 // the child will be available in the template
-// vial {{ .children.(name).Render }}
+// via {{ .children.(name).Render }}
 func (n *node) AddChild(child Island, prerender bool) {
 	n.children[child.GetName()] = chld{
 		child:     child,
