@@ -33,15 +33,13 @@ func (o *Oasis) AddFuncMap(fmap FuncMap) {
 }
 
 func (o *Oasis) Run() {
-	if o.funcs == nil {
-		return
-	}
-
-	for k, v := range o.funcs {
-		js.Global().Set(k, js.FuncOf(func(this js.Value, args []js.Value) interface{} {
-			v(args...)
-			return nil
-		}))
+	if o.funcs != nil {
+		for k, v := range o.funcs {
+			js.Global().Set(k, js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+				v(args...)
+				return nil
+			}))
+		}
 	}
 	<-make(chan struct{})
 }
