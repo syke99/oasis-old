@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/go-chi/chi/v5"
 	"github.com/syke99/oasis/islands"
 	"golang.org/x/net/context"
 	"net/http"
