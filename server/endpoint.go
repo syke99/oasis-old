@@ -21,7 +21,7 @@ type Endpoint struct {
 // through
 type HandlerWithMiddleware struct {
 	HandlerFunc http.HandlerFunc
-	Middleware  []http.HandlerFunc
+	Middleware  []http.Handler
 	Island      islands.Island
 }
 

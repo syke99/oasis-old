@@ -4,21 +4,34 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/gorilla/mux"
 	"github.com/syke99/oasis/islands"
-	"golang.org/x/net/context"
 	"net/http"
 )
 
 // Router wraps a chi.Router
 // to add Endpoints to
 type Router struct {
-	mux chi.Router
+	mux any
 }
 
-func NewRouter() *Router {
-	return &Router{
-		mux: chi.NewRouter(),
+type Valid interface {
+	*mux.Router | *chi.Mux
+}
+
+// UpgradeRouter upgrades a chi.Router and
+// returns a new *Router
+func UpgradeRouter[V Valid](router V) *Router {
+	r := &Router{}
+
+	switch any(router).(type) {
+	case *mux.Router:
+		r.mux = any(router).(*mux.Router)
+	case *chi.Mux:
+		r.mux = any(router).(*chi.Mux)
 	}
+
+	return r
 }
 
 // AddEndpoint adds an individual Endpoint
@@ -27,46 +40,12 @@ func NewRouter() *Router {
 // route, as well as makes sure they're passed
 // through their respective middlewares
 func (r *Router) AddEndpoint(endpoint Endpoint) *Router {
-	// create a sub-router for this endpoint
-	rtr := chi.NewRouter()
-
-	rtr.Route(endpoint.Route, func(r chi.Router) {
-		for method, handler := range endpoint.Handlers {
-			// create method-specific sub-router
-			sub := chi.NewRouter()
-
-			// if the handler uses middleware, add said
-			// middleware to handler
-			if handler.Middleware != nil || len(handler.Middleware) != 0 {
-				for i := range handler.Middleware {
-					sub.Use(func(h http.Handler) http.Handler {
-						return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-							handler.Middleware[i].ServeHTTP(w, r)
-						})
-					})
-				}
-			}
-
-			// add the handler to the specified method
-			sub.Method(string(method), "", func() http.Handler {
-				return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					oW := NewOasisWriter(w, handler.Island)
-
-					r.WithContext(context.WithValue(r.Context(), "props", handler.Island.GetProps()))
-
-					handler.HandlerFunc(oW, r)
-				})
-			}())
-
-			// mount the method-specific sub-router
-			// to the main sub-router
-			rtr.Mount("", sub)
-		}
-	})
-
-	// mount the sub-router at the specified route
-	r.mux.Mount(endpoint.Route, rtr)
-
+	switch r.mux.(type) {
+	case *mux.Router:
+		r.mux = mountRoutesGorilla(r.mux.(*mux.Router), endpoint)
+	case *chi.Mux:
+		r.mux = mountRoutesChi(r.mux.(*chi.Mux), endpoint)
+	}
 	return r
 }
 
@@ -91,16 +70,13 @@ func PropsForRequest(r *http.Request) map[string]any {
 	return nil
 }
 
-// UpgradeRouter upgrades a chi.Router and
-// returns a new *Router
-func UpgradeRouter(router chi.Router) *Router {
-	return &Router{
-		mux: router,
-	}
-}
-
 func (r *Router) ServeHTTP(w http.ResponseWriter, rq *http.Request) {
-	r.mux.ServeHTTP(w, rq)
+	switch r.mux.(type) {
+	case *mux.Router:
+		r.mux.(*mux.Router).ServeHTTP(w, rq)
+	case *chi.Mux:
+		r.mux.(*chi.Mux).ServeHTTP(w, rq)
+	}
 }
 
 // OasisWriter satisfies the http.ResponseWriter
