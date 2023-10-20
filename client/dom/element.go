@@ -10,6 +10,7 @@ import (
 type Element interface {
 	AddEventListener(name string, fn func(args ...js.Value) interface{})
 	On(name OnEvent, fn func(args ...js.Value) interface{})
+	RemoveEventListener(name string, fn func(args ...js.Value) interface{}, isCapture bool)
 	GetElementById(id string) Element
 	GetElementsByClassName(class string) []Element
 	GetInnerHTML() string
@@ -36,6 +37,12 @@ func (e *element) On(name OnEvent, fn func(args ...js.Value) interface{}) {
 	e.elem.Call("addEventListener", string(name), js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		return fn(args...)
 	}))
+}
+
+func (e *element) RemoveEventListener(name string, fn func(args ...js.Value) interface{}, isCapture bool) {
+	e.elem.Call("removeEventListener", name, js.FuncOf(func(this js.Value, args []js.Value) any {
+		return fn(args...)
+	}), isCapture)
 }
 
 func (e *element) GetElementById(id string) Element {

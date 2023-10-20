@@ -8,10 +8,8 @@ type Doc struct {
 	doc js.Value
 }
 
-func Document() *Doc {
-	return &Doc{
-		doc: js.Global().Get("document"),
-	}
+var Document = &Doc{
+	doc: js.Global().Get("document"),
 }
 
 func (d *Doc) GetElementById(id string) Element {
