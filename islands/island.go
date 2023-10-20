@@ -119,11 +119,11 @@ func (n *node) AddProps(props map[string]any) Island {
 // inside other Islands so whenever the
 // parent Island gets rendered, all child
 // Islands that were added to a parent Island
-// with prerendered set to true will also be
+// with prerender set to true will also be
 // rendered, and thus, will be accessible in
 // an Island's template via
 // {{ .children.(name) }}. If the child was
-// added and prerendered was false, then
+// added and prerender was false, then
 // the child will be available in the template
 // via {{ .children.(name).Render }}
 func (n *node) AddChild(child Island, prerender bool) {
