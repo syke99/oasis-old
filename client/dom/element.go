@@ -19,6 +19,9 @@ type Element interface {
 	// with the given name. fn must match the same event listener that
 	// was set for the given name whenever AddEventListener was called
 	RemoveEventListener(name string, fn func(args ...js.Value) interface{}, isCapture bool)
+	// DispatchEvent dispatches the provided Event to the Element
+	// it is called on
+	DispatchEvent(event *Event)
 	// GetElementById returns the child Element with
 	// the matching id
 	GetElementById(id string) Element
@@ -79,6 +82,12 @@ func (e *element) RemoveEventListener(name string, fn func(args ...js.Value) int
 	e.elem.Call("removeEventListener", name, js.FuncOf(func(this js.Value, args []js.Value) any {
 		return fn(args...)
 	}), isCapture)
+}
+
+// DispatchEvent dispatches the provided Event to the Element
+// it is called on
+func (e *element) DispatchEvent(event *Event) {
+	e.elem.Call("dispatchEvent", event.event)
 }
 
 // GetElementById returns the child Element with
