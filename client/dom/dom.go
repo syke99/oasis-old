@@ -2,9 +2,14 @@
 
 package dom
 
-import "syscall/js"
+import (
+	"strings"
+	"syscall/js"
+)
 
 type Element interface {
+	AddEventListener(name string, fn func(args ...js.Value) interface{})
+	On(name OnEvent, fn func(args ...js.Value) interface{})
 	GetElementById(id string) Element
 	GetElementsByClassName(class string) []Element
 	GetInnerHTML() string
@@ -12,11 +17,25 @@ type Element interface {
 	GetOuterHTML() string
 	SetOuterHTML(outer string)
 	SetAttribute(attr string, val string)
+	GetAttribute(attr string) js.Value
 	GetId() string
+	GetClasses() []string
 }
 
 type element struct {
 	elem js.Value
+}
+
+func (e *element) AddEventListener(name string, fn func(args ...js.Value) interface{}) {
+	e.elem.Call("addEventListener", name, js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		return fn(args...)
+	}))
+}
+
+func (e *element) On(name OnEvent, fn func(args ...js.Value) interface{}) {
+	e.elem.Call("addEventListener", string(name), js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		return fn(args...)
+	}))
 }
 
 func (e *element) GetElementById(id string) Element {
@@ -57,10 +76,20 @@ func (e *element) SetOuterHTML(outer string) {
 	e.elem.Set("outerHTML", outer)
 }
 
+func (e *element) GetAttribute(attr string) js.Value {
+	return e.elem.Get(attr)
+}
+
 func (e *element) SetAttribute(attr string, val string) {
 	e.elem.Set(attr, val)
 }
 
 func (e *element) GetId() string {
 	return e.elem.Get("id").String()
+}
+
+func (e *element) GetClasses() []string {
+	classes := e.elem.Get("class").String()
+
+	return strings.Split(classes, "")
 }
