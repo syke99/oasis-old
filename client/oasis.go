@@ -2,7 +2,10 @@
 
 package client
 
-import "syscall/js"
+import (
+	"github.com/syke99/oasis/client/console"
+	"syscall/js"
+)
 
 type FuncMap map[string]func(args ...js.Value)
 
@@ -40,6 +43,8 @@ func (o *Oasis) Run() {
 				return nil
 			}))
 		}
+	} else {
+		console.ErrMessage("attempted to run oasis app without funcmap; shutting down", nil)
 	}
 	<-make(chan struct{})
 }
