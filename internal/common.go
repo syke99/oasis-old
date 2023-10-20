@@ -11,7 +11,7 @@ import (
 
 type Attrs struct {
 	Props    map[string]any
-	Children map[string]string
+	Children map[string]any
 	Payload  map[string]any
 }
 

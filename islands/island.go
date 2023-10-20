@@ -25,7 +25,7 @@ type Island interface {
 	// Islands will also be rendered, and thus,
 	// will be accessible in an Island's template
 	// via {{ .children.(name) }}
-	AddChild(child Island)
+	AddChild(child Island, prerender bool)
 	// AddProp adds  prop to an Island. It will then be
 	// available in an Island's template via {{ .props.name }}
 	AddProp(name string, prop any) Island
@@ -59,8 +59,13 @@ type node struct {
 	name     string
 	template string
 	props    *props
-	children map[string]Island
+	children map[string]chld
 	payload  map[string]any
+}
+
+type chld struct {
+	prerender bool
+	child     Island
 }
 
 func NewIsland(name string, template string) Island {
@@ -68,7 +73,7 @@ func NewIsland(name string, template string) Island {
 		name:     name,
 		template: template,
 		props:    &props{props: make(map[string]any, 0)},
-		children: make(map[string]Island, 0),
+		children: make(map[string]chld, 0),
 	}
 
 	return n
@@ -113,11 +118,19 @@ func (n *node) AddProps(props map[string]any) Island {
 // AddChild allows you to nest Islands
 // inside other Islands so whenever the
 // parent Island gets rendered, all child
-// Islands will also be rendered, and thus,
-// will be accessible in an Island's template
-// via {{ .children.(name) }}
-func (n *node) AddChild(child Island) {
-	n.children[child.GetName()] = child
+// Islands that were added to a parent Island
+// with prerendered set to true will also be
+// rendered, and thus, will be accessible in
+// an Island's template via
+// {{ .children.(name) }}. If the child was
+// added and prerendered was false, then
+// the child will be available in the template
+// vial {{ .children.(name).Render }}
+func (n *node) AddChild(child Island, prerender bool) {
+	n.children[child.GetName()] = chld{
+		child:     child,
+		prerender: prerender,
+	}
 }
 
 // Hydrate takes in a payload that has been unmarshalled
@@ -146,15 +159,20 @@ func (n *node) HydrateBytes(payload []byte) (Island, error) {
 // the rendered template string or an error if one
 // occurs
 func (n *node) Render() (string, error) {
-	childMap := make(map[string]string)
+	childMap := make(map[string]any)
 
 	for name, child := range n.children {
-		renderedChild, err := child.Render()
-		if err != nil {
-			return "", err
+		if child.prerender {
+			renderedChild, err := child.child.Render()
+			if err != nil {
+				return "", err
+			}
+
+			childMap[name] = renderedChild
+			continue
 		}
 
-		childMap[name] = renderedChild
+		childMap[name] = child
 	}
 
 	p := &internal.Attrs{
