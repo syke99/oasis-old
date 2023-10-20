@@ -22,9 +22,14 @@ type Island interface {
 	// AddChild allows you to nest Islands
 	// inside other Islands so whenever the
 	// parent Island gets rendered, all child
-	// Islands will also be rendered, and thus,
-	// will be accessible in an Island's template
-	// via {{ .children.(name) }}
+	// Islands that were added to a parent Island
+	// with prerender set to true will also be
+	// rendered, and thus, will be accessible in
+	// an Island's template via
+	// {{ .children.(name) }}. If the child was
+	// added and prerender was false, then
+	// the child will be available in the template
+	// via {{ .children.(name).Render }}
 	AddChild(child Island, prerender bool)
 	// AddProp adds  prop to an Island. It will then be
 	// available in an Island's template via {{ .props.name }}
