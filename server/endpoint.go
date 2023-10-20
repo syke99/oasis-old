@@ -5,11 +5,20 @@ import (
 	"net/http"
 )
 
+// Endpoint ties a route
+// to a map of Handlers
+// so that you can map a
+// HandlerWithMiddleware
+// to a specific HTTPMethod
 type Endpoint struct {
 	Route    string
 	Handlers map[HTTPMethod]HandlerWithMiddleware
 }
 
+// HandlerWithMiddleware ties a http.HandlerFunc
+// and islands.Island together, along with any
+// middleware you want this handler to be passed
+// through
 type HandlerWithMiddleware struct {
 	HandlerFunc http.HandlerFunc
 	Middleware  []http.HandlerFunc

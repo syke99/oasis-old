@@ -9,17 +9,35 @@ type props struct {
 	props map[string]any
 }
 
+// Island is an interface for manipulating
+// templates to be returned for a request
 type Island interface {
-	AddChild(child Island)
-	AddProp(name string, prop any) Island
-	AddProps(props map[string]any) Island
-	Hydrate(payload map[string]any) Island
-	HydrateBytes(payload []byte) (Island, error)
-	Render() (string, error)
+	// GetName returns the name of an Island
 	GetName() string
+	// GetTemplate returns the template of an Island
 	GetTemplate() string
+	AddChild(child Island)
+	// AddProp adds  prop to an Island. It will then be
+	// available in an Island's template via {{ .props.name }}
+	AddProp(name string, prop any) Island
+	// AddProps adds  props to an Island at once
+	AddProps(props map[string]any) Island
+	// Hydrate takes in a payload that has been unmarshalled
+	// from JSON into a map[string]any so that it can be
+	// accessed in an Island's template via {{ .payload.* }}
+	Hydrate(payload map[string]any) Island
+	// HydrateBytes is just like Hydrate, except it accepts
+	// a []byte representation of a JSON object
+	HydrateBytes(payload []byte) (Island, error)
+	// Render renders an Island's template and returns
+	// the rendered template string or an error if one
+	// occurs
+	Render() (string, error)
 }
 
+// MustRender attempts to render an Island
+// and returns the rendered template. It
+// panics if an error is encountered
 func MustRender(elem Island) string {
 	str, err := elem.Render()
 	if err != nil {
@@ -47,26 +65,29 @@ func NewIsland(name string, template string) Island {
 	return n
 }
 
+// GetName returns the name of an Island
 func (n *node) GetName() string {
 	return n.name
 }
 
+// GetTemplate returns the template of an Island
 func (n *node) GetTemplate() string {
 	return n.template
 }
 
+// AddProp adds  prop to an Island. It will then be
+// available in an Island's template via {{ .props.name }}
 func (n *node) AddProp(name string, prop any) Island {
 	n.props.props[name] = prop
 	return n
 }
 
+// AddProps adds  props to an Island at once
 func (n *node) AddProps(props map[string]any) Island {
 	if len(n.props.props) == 0 {
 		n.props.props = props
 	} else {
 		for k, v := range props {
-			v := v
-
 			n.props.props[k] = v
 		}
 	}
@@ -78,11 +99,16 @@ func (n *node) AddChild(child Island) {
 	n.children[child.GetName()] = child
 }
 
+// Hydrate takes in a payload that has been unmarshalled
+// from JSON into a map[string]any so that it can be
+// accessed in an Island's template via {{ .payload.* }}
 func (n *node) Hydrate(payload map[string]any) Island {
 	n.payload = payload
 	return n
 }
 
+// HydrateBytes is just like Hydrate, except it accepts
+// a []byte representation of a JSON object
 func (n *node) HydrateBytes(payload []byte) (Island, error) {
 	p := make(map[string]any)
 
@@ -95,6 +121,9 @@ func (n *node) HydrateBytes(payload []byte) (Island, error) {
 	return n, nil
 }
 
+// Render renders an Island's template and returns
+// the rendered template string or an error if one
+// occurs
 func (n *node) Render() (string, error) {
 	p := &internal.Attrs{
 		Props:    n.props.props,

@@ -10,6 +10,12 @@ import (
 	"syscall/js"
 )
 
+// Do preforms the given *http.Request
+// and handles all asynchronicity to prevent
+// an Oasis from crashing due to blocking calls,
+// then returns the *http.Response or error; this
+// provides an idiomatic way of preforming HTTP
+// requests
 func Do(req *http.Request) (*http.Response, error) {
 	var res *http.Response
 	var err error

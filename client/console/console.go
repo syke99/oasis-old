@@ -8,6 +8,9 @@ import (
 
 var console = js.Global().Get("console")
 
+// Assert calls console.assert() with the given assertion, any args
+// to be passed to the assertion, and then any args to be passed to
+// console.assert
 func Assert(assertion func(...any) bool, astArgs []any, args ...any) {
 	a := make([]js.Value, len(args))
 
@@ -30,10 +33,14 @@ func Assert(assertion func(...any) bool, astArgs []any, args ...any) {
 	console.Call("assert", all...)
 }
 
+// Clear calls console.clear()
 func Clear() {
 	console.Call("clear")
 }
 
+// Count calls console.count();
+// if label is not empty, it calls
+// console.count(label)
 func Count(label string) {
 	switch label == "" {
 	case true:
@@ -43,6 +50,9 @@ func Count(label string) {
 	}
 }
 
+// CountReset calls console.countReset();
+// if label is not empty, it calls
+// console.countReset(label)
 func CountReset(label string) {
 	switch label == "" {
 	case true:
@@ -52,10 +62,12 @@ func CountReset(label string) {
 	}
 }
 
+// DebugObject calls console.debug(objs...)
 func DebugObject(objs ...any) {
 	console.Call("debug", objs...)
 }
 
+// DebugMessage calls console.debug(msg, subStr...)
 func DebugMessage(msg string, subStr []string) {
 	s := make([]js.Value, len(subStr))
 
@@ -74,18 +86,22 @@ func DebugMessage(msg string, subStr []string) {
 	console.Call("debug", all...)
 }
 
+// Dir calls console.dir(obj)
 func Dir(obj any) {
 	console.Call("dir", js.ValueOf(obj))
 }
 
+// DirXML calls console.dirxml(obj)
 func DirXML(obj any) {
 	console.Call("dirxml", js.ValueOf(obj))
 }
 
+// ErrObject calls console.error(objs...)
 func ErrObject(objs ...any) {
 	console.Call("error", objs...)
 }
 
+// ErrMessage calls console.error(msg, subStr...)
 func ErrMessage(msg string, subStr []string) {
 	s := make([]js.Value, len(subStr))
 
@@ -104,6 +120,9 @@ func ErrMessage(msg string, subStr []string) {
 	console.Call("error", all...)
 }
 
+// Group calls console.group();
+// if label is not empty, it calls
+// console.group(label)
 func Group(label string) {
 	switch label == "" {
 	case true:
@@ -113,6 +132,9 @@ func Group(label string) {
 	}
 }
 
+// GroupCollapsed calls console.groupCollapsed();
+// if label is not empty, it calls
+// console.groupCollapsed(label)
 func GroupCollapsed(label string) {
 	switch label == "" {
 	case true:
@@ -122,14 +144,17 @@ func GroupCollapsed(label string) {
 	}
 }
 
+// GroupEnd calls console.groupEnd()
 func GroupEnd() {
 	console.Call("groupEnd")
 }
 
+// InfoObject calls console.info(objs...)
 func InfoObject(objs ...any) {
 	console.Call("info", objs...)
 }
 
+// InfoMessage calls console.info(msg, subStr...)
 func InfoMessage(msg string, subStr []string) {
 	s := make([]js.Value, len(subStr))
 
@@ -148,10 +173,12 @@ func InfoMessage(msg string, subStr []string) {
 	console.Call("info", all...)
 }
 
+// LogObject calls console.log(objs...)
 func LogObject(objs ...any) {
 	console.Call("log", objs...)
 }
 
+// LogMessage calls console.log(msg, subStr...)
 func LogMessage(msg string, subStr []string) {
 	s := make([]js.Value, len(subStr))
 
@@ -191,6 +218,9 @@ func Table(obj any, restrictions ...any) {
 	}
 }
 
+// Time calls console.time();
+// if label is not empty, it calls
+// console.time(label)
 func Time(label string) {
 	switch label == "" {
 	case true:
@@ -200,6 +230,9 @@ func Time(label string) {
 	}
 }
 
+// TimeEnd calls console.timeEnd();
+// if label is not empty, it calls
+// console.timeEnd(label)
 func TimeEnd(label string) {
 	switch label == "" {
 	case true:
@@ -209,35 +242,37 @@ func TimeEnd(label string) {
 	}
 }
 
+// TimeLog calls console.timeLog(vals...);
+// if label is not empty, it calls
+// console.timeLog(label, vals...)
 func TimeLog(label string, vals ...any) {
-	v := make([]js.Value, len(vals))
-
-	for i := range vals {
-		v[i] = js.ValueOf(vals[i])
-	}
 
 	switch label == "" {
 	case true:
-		console.Call("timeLog", v)
+		console.Call("timeLog", vals...)
 	case false:
-		console.Call("timeLog", label, v)
+		v := make([]any, len(vals)+1)
+
+		v[0] = label
+
+		for i := range vals {
+			v[i+1] = vals[i+1]
+		}
+		console.Call("timeLog", v...)
 	}
 }
 
+// Trace calls console.trace(objs...)
 func Trace(objs ...any) {
-	o := make([]js.Value, len(objs))
-
-	for i := range objs {
-		o[i] = js.ValueOf(objs[i])
-	}
-
-	console.Call("trace", o)
+	console.Call("trace", objs...)
 }
 
+// WarnObject calls console.warn(objs...)
 func WarnObject(objs ...any) {
 	console.Call("warn", objs...)
 }
 
+// WarnMessage calls console.warn(msg, subStr...)
 func WarnMessage(msg string, subStr []string) {
 	s := make([]js.Value, len(subStr))
 
