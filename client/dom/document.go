@@ -16,6 +16,14 @@ var Document = &Doc{
 	doc: js.Global().Get("document"),
 }
 
+// GetElementsByTagName returns all Elements
+// in a document with the given name
+func (d *Doc) GetElementsByTagName(name string) Element {
+	return &element{
+		elem: d.doc.Call("getElementsByName", name),
+	}
+}
+
 // GetElementById returns the child Element with
 // the matching id
 func (d *Doc) GetElementById(id string) Element {

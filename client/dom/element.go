@@ -3,6 +3,8 @@
 package dom
 
 import (
+	"fmt"
+	"github.com/syke99/oasis/client/console"
 	"strings"
 	"syscall/js"
 )
@@ -54,10 +56,70 @@ type Element interface {
 	// GetClasses returns a slice of all
 	// classes for a given Element
 	GetClasses() []string
+	// GetTagName returns the Element's
+	// HTML tag name
+	GetTagName() string
+	// Append allows you to append a
+	// child Element to a parent Element's
+	// children Elements
+	Append(elm Element)
+	// Prepend allows you to prepend a
+	// child Element to a parent Element's
+	// children Elements
+	Prepend(elm Element)
+	// Remove removes the Element
+	// from the DOM
+	Remove()
+	// RemoveAttribute removes the given
+	// attr from the Element it was called
+	// on
+	RemoveAttribute(attr string)
+	// ReplaceChildren replaces the children
+	// Elements of the parent Element it was
+	// called on with children
+	ReplaceChildren(children ...Element)
+	// ReplaceWith replaces the
+	// Element it was called on
+	// with the given elements
+	ReplaceWith(elems ...Element)
+	// ScrollCoordinates scrolls to the given
+	// coordinates inside the element it
+	// was called on
+	ScrollCoordinates(x int, y int)
+	// ScrollOpts functions like
+	// ScrollCoordinates, except it
+	// takes a *ScrollOpts to allow
+	// you to specify the behavior of
+	// how scrolling happens instead
+	// of just taking in coordinates
+	ScrollOpts(opts *ScrollOpts)
+	// ScrollByCoordinates allows you
+	// to scroll the screen by the given
+	// number of pixels along the x and y
+	// axes
+	ScrollByCoordinates(x int, y int)
+	// ScrollToCoordinates scrolls to the
+	// pixel coordinates of x and y
+	ScrollToCoordinates(x int, y int)
+	// ScrollToOptions functions like
+	// ScrollToCoordinates, except it
+	// takes a *ScrollOpts to allow
+	// you to specify the behavior of
+	// how scrolling happens instead
+	// of just taking in coordinates
+	ScrollToOptions(opts *ScrollOpts)
 }
 
 type element struct {
 	elem js.Value
+}
+
+func NewElement(name string, initFunc js.Func, onMount js.Func, onDismount js.Func) Element {
+	js.Global().Call("makeComponent", name, initFunc, onMount, onDismount)
+
+	return &element{
+		elem: any(Document.GetElementsByTagName(name)).(*element).elem.Index(0),
+	}
 }
 
 // AddEventListener allows you to add a custom event listener
@@ -166,4 +228,163 @@ func (e *element) GetClasses() []string {
 	classes := e.elem.Get("class").String()
 
 	return strings.Split(classes, "")
+}
+
+// GetTagName returns the Element's
+// HTML tag name
+func (e *element) GetTagName() string {
+	return e.elem.Get("tagName").String()
+}
+
+// Append allows you to append a
+// child Element to a parent Element's
+// children Elements
+func (e *element) Append(elm Element) {
+	switch elm.(type) {
+	case *element:
+		e.elem.Call("append", elm.(*element).elem)
+	default:
+		console.ErrMessage(fmt.Sprintf("cannot append element %+v to parent element %s", elm, e.GetTagName()), nil)
+	}
+}
+
+// Prepend allows you to prepend a
+// child Element to a parent Element's
+// children Elements
+func (e *element) Prepend(elm Element) {
+	switch elm.(type) {
+	case *element:
+		e.elem.Call("prepend", elm.(*element).elem)
+	default:
+		console.ErrMessage(fmt.Sprintf("cannot prepend element %+v to parent element %s", elm, e.GetTagName()), nil)
+	}
+}
+
+// Remove removes the Element
+// from the DOM
+func (e *element) Remove() {
+	e.elem.Call("remove")
+}
+
+// RemoveAttribute removes the given
+// attr from the Element it was called
+// on
+func (e *element) RemoveAttribute(attr string) {
+	e.elem.Call("removeAttribute", attr)
+}
+
+// ReplaceChildren replaces the children
+// Elements of the parent Element it was
+// called on with children
+func (e *element) ReplaceChildren(children ...Element) {
+	for i := range children {
+		child := children[i]
+
+		switch child.(type) {
+		case *element:
+			e.elem.Call("replaceChildren", child.(*element).elem)
+		default:
+			console.ErrMessage(fmt.Sprintf("cannot replace element %s children with child element %+v", e.GetTagName(), child), nil)
+		}
+	}
+}
+
+// ReplaceWith replaces the
+// Element it was called on
+// with the given elements
+func (e *element) ReplaceWith(elems ...Element) {
+	for i := range elems {
+		elem := elems[i]
+
+		switch elem.(type) {
+		case *element:
+			e.elem.Call("replaceWith", elem.(*element).elem)
+		default:
+			console.ErrMessage(fmt.Sprintf("cannot replace element %s with element %+v", e.GetTagName(), elem), nil)
+		}
+	}
+}
+
+type ScrollOpts struct {
+	opts map[string]any
+}
+
+func NewScrollOpts() *ScrollOpts {
+	return &ScrollOpts{opts: make(map[string]any)}
+}
+
+func (s *ScrollOpts) Top(top int) *ScrollOpts {
+	s.opts["top"] = top
+	return s
+}
+
+func (s *ScrollOpts) Left(left int) *ScrollOpts {
+	s.opts["left"] = left
+	return s
+}
+
+func (s *ScrollOpts) BehaviorSmooth() *ScrollOpts {
+	s.opts["behavior"] = "smooth"
+	return s
+}
+
+func (s *ScrollOpts) BehaviorInstant() *ScrollOpts {
+	s.opts["behavior"] = "instant"
+	return s
+}
+
+func (s *ScrollOpts) BehaviorAuto() *ScrollOpts {
+	s.opts["behavior"] = "auto"
+	return s
+}
+
+// ScrollCoordinates scrolls to the given
+// coordinates inside the element it
+// was called on
+func (e *element) ScrollCoordinates(x int, y int) {
+	e.elem.Call("scroll", x, y)
+}
+
+// ScrollOpts functions like
+// ScrollCoordinates, except it
+// takes a *ScrollOpts to allow
+// you to specify the behavior of
+// how scrolling happens instead
+// of just taking in coordinates
+func (e *element) ScrollOpts(opts *ScrollOpts) {
+	e.elem.Call("scroll", opts.opts)
+}
+
+// ScrollByCoordinates allows you
+// to scroll the screen by the given
+// number of pixels along the x and y
+// axes
+func (e *element) ScrollByCoordinates(x int, y int) {
+	e.elem.Call("scrollBy", x, y)
+}
+
+// ScrollByOpts functions like
+// ScrollByCoordinates, except it
+// takes a *ScrollOpts to allow
+// you to specify the behavior of
+// how scrolling happens instead
+// of just taking in coordinates
+func (e *element) ScrollByOpts(opts *ScrollOpts) {
+	e.elem.Call("scrollBy", opts.opts)
+}
+
+// ScrollToCoordinates scrolls to the
+// pixel coordinates of x and y
+func (e *element) ScrollToCoordinates(x int, y int) {
+	e.elem.Call("scrollTo", x, y)
+}
+
+// ScrollToOptions functions like
+// ScrollToCoordinates, except it
+// takes a *ScrollOpts to allow
+// you to specify the behavior of
+// how scrolling happens instead
+// of just taking in coordinates
+func (e *element) ScrollToOptions(opts *ScrollOpts) {
+	e.elem.Call("scrollTo", opts.opts)
 }
